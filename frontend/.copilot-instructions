@@ -1,0 +1,12 @@
+
+
+You are helping build the frontend for a Job Board app using React + Vite, TailwindCSS, and shadcn/ui.
+
+Rules:
+- Use functional components and hooks.
+- Use TailwindCSS for layout and styling.
+- Use shadcn/ui components for forms, modals, and buttons.
+- Keep components modular (e.g., Layout, Header, JobCard, etc.).
+- Write clear, well-indented JSX with minimal logic inside templates.
+- Prefer clean, readable code over clever one-liners.
+- Add small comments explaining non-trivial logic.
