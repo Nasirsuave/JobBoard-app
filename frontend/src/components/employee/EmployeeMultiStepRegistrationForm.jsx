@@ -2,22 +2,25 @@ import React, { useState, useRef } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import MultiStepContainer from "../registration/MultiStepContainer"
+import RenderDynamicField from "../registration/RenderDynamicField"
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default function EmployeeMultiStepRegistrationForm() {
   const [step, setStep] = useState(0)
   const [values, setValues] = useState({
-    fullName: "",
+    full_name: "",
     email: "",
     password: "",
-    confirmPassword: "",
+    // confirmPassword: "",
     phone: "",
     resume: null,
     skills: "",
     experience: "",
     location: "",
   })
+
   const [errors, setErrors] = useState({})
   const resumeRef = useRef(null)
 
@@ -25,7 +28,7 @@ export default function EmployeeMultiStepRegistrationForm() {
     {
       title: "Account",
       fields: [
-        { name: "fullName", label: "Full Name", required: true, type: "text" },
+        { name: "full_name", label: "Full Name", required: true, type: "text" },
         { name: "email", label: "Email", required: true, type: "email" },
         { name: "password", label: "Password", required: true, type: "password" },
       ],
@@ -100,22 +103,69 @@ export default function EmployeeMultiStepRegistrationForm() {
     setStep((s) => Math.max(s - 1, 0))
   }
 
-  function handleSubmit(e) {
-    e.preventDefault()
-    // validate final step
-    if (!validateStep(step)) return
+  // function handleSubmit(e) {
+  //   e.preventDefault()
+  //   // validate final step
+  //   if (!validateStep(step)) return
 
-    // Prepare payload
-    const payload = { ...values }
-    if (values.skills) payload.skills = values.skills.split(",").map((s) => s.trim()).filter(Boolean)
+  //   // Prepare payload
+  //   const payload = { ...values }
+  //   if (values.skills) payload.skills = values.skills.split(",").map((s) => s.trim()).filter(Boolean)
 
-    // For demo: print to console. Replace with API call.
-    console.log("Submitting registration:", payload)
-    alert("Registration submitted (check console)")
+  //   // For demo: print to console. Replace with API call.
+  //   console.log("Submitting registration:", payload)
+  //   alert("Registration submitted (check console)")
+  // }
+
+
+
+  async function handleSubmit(e) {
+  e.preventDefault()
+
+  if (!validateStep(step)) return
+
+  const formData = new FormData()
+
+  Object.entries(values).forEach(([key, val]) => {
+    if (val !== null && val !== "") {
+      if (key === "skills" && typeof val === "string") {
+        val
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .forEach((skill) => formData.append("skills", skill))
+      } else {
+        formData.append(key, val)
+      }
+    }
+  })
+
+  try {
+    const res = await fetch("http://127.0.0.1:8000/api/register/employee/", {
+      method: "POST",
+      body: formData, // DO NOT set Content-Type manually
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      console.error(err)
+      alert("Registration failed")
+      return
+    }
+
+    const data = await res.json()
+    console.log("Success:", data)
+    alert("Registration successful!")
+  } catch (err) {
+    console.error("Network error:", err)
+    alert("Network error")
   }
+}
+
+
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto">
+    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto "> 
       <div className="bg-white rounded-xl p-6 shadow-md">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Register - {steps[step].title}</h2>
@@ -123,76 +173,29 @@ export default function EmployeeMultiStepRegistrationForm() {
             {steps.map((_, i) => ( //In this case, we don’t actually need the step object itself — we only care about the index (i), so we use _
               <div
                 key={i}
-                className={`w-3 h-3 rounded-full transition-colors duration-300 ${i === step ? "bg-primary" : "bg-gray-200"}`}
+                className={`w-3 h-3 rounded-full transition-colors duration-300  ${i === step ? "bg-[#7B294E]" : "bg-gray-200"}`}
               />
             ))}
           </div>
         </div>
 
-        <div className="relative overflow-hidden">
-          <div 
-            className="flex transition-transform duration-500 ease-in-out"
-            style={{ width: `${steps.length * 100}%`, transform: `translateX(-${step * (100 / steps.length)}%)` }}
-          >
-            {steps.map((s, idx) => (
-              <div key={s.title} className="w-full pr-4"> {/* w-full and min-w-full refer to the flex container’s width of the visible parent (50px).NOT the entire scrollable track (150px). */ }
-                <div className="grid grid-cols-1 gap-4">
+    <MultiStepContainer
+      step={step}
+      steps={steps}
+      renderFields={(fields) => 
+        fields.map((field) => (
+          <RenderDynamicField
+            key={field.name}
+            field={field}
+            value={values[field.name]}
+            error={errors[field.name]}
+            onChange={(name, val) => setValue(name, val)}
+            inputRef={resumeRef}
+          />
+        ))
+      }
+    />
 
-
-                  {s.fields.map((field) => {
-                    const name = field.name
-                    const val = values[name]
-                    return (
-                      <div key={name} className="w-full ">
-                        <Label htmlFor={name}>{field.label}{field.required ? " *" : ""}</Label>
-                        {field.type === "textarea" ? (
-                          <textarea
-                            id={name}
-                            value={val}
-                            onChange={(e) => setValue(name, e.target.value)}
-                            className="w-full rounded-md border px-3 py-2 resize-vertical"
-                            rows={3}
-                          />
-                        ) : field.type === "select" ? (
-                          <select
-                            id={name}
-                            value={val}
-                            onChange={(e) => setValue(name, e.target.value)}
-                            className="w-full rounded-md border px-3 py-2"
-                          >
-                            <option value="">Select experience</option>
-                            <option value="entry">Entry</option>
-                            <option value="mid">Mid</option>
-                            <option value="senior">Senior</option>
-                          </select>
-                        ) : field.type === "file" ? (
-                          <Input
-                            id={name}
-                            type="file"
-                            ref={resumeRef}
-                            accept=".pdf,.doc,.docx"
-                            onChange={(e) => setValue("resume", e.target.files[0] || null)}
-                          />
-                        ) : (
-                          <Input
-                            id={name}
-                            type={field.type}
-                            value={val}
-                            onChange={(e) => setValue(name, e.target.value)}
-                          />
-                        )}
-
-                        {errors[name] && (
-                          <p className="mt-1 text-sm text-destructive">{errors[name]}</p>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
 
         <div className="flex items-center justify-between mt-6">
           <div>
@@ -203,7 +206,7 @@ export default function EmployeeMultiStepRegistrationForm() {
 
           <div className="flex items-center gap-3">
             {step < steps.length - 1  ? (
-              <Button type="button" onClick={handleNext}>Next</Button>
+              <Button type="button" onClick={handleNext} className="bg-[#7B294E] hover:bg-[#7B294E] hover:opacity-90 hover:transition-opacity duration-300 ease-in-out ">Next</Button>
             ) : (
               <Button type="submit">Submit</Button>
             )}

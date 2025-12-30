@@ -1,6 +1,7 @@
 import React from 'react'
 import LandingLeftPane from './LandingLeftPane';
 import LandingRightPane from './LandingRightPane';
+import LoginRoleSelector from '../auth/LoginRoleSelector';
 
 export default function LandingLayout() {
  const userTypes = [
@@ -25,9 +26,12 @@ export default function LandingLayout() {
   ];
 
   return (
-    <div className="min-h-screen flex justify-center items-center  py-20">
-      <div className="flex w-11/12 max-w-6xl rounded-3xl bg-[#FDF6EE] overflow-hidden shadow-lg p-[1rem]">
+    <div className="min-h-screen flex justify-center items-center py-20 ">
+       {/* <LoginRoleSelector /> */}
+      <div className="flex w-11/12 max-w-6xl rounded-3xl bg-[#FDF6EE] overflow-hidden shadow-lg p-[1rem] ">
         
+        {/* Login Role Selector */}
+
         {/* Left Section */}
       <LandingLeftPane />
 

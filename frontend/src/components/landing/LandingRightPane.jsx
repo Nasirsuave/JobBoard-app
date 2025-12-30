@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useState} from 'react'
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import EmployeeMultiStepRegistrationForm from './EmployeeMultiStepRegistrationForm'
+import EmployeeMultiStepRegistrationForm from '../employee/EmployeeMultiStepRegistrationForm'
+import EmployerMultiStepRegistrationForm from '../employer/EmployerMultiStepRegistrationForm'
+import AdminMultiStepRegistrationForm from '../admin/AdminMultiStepRegistrationForm'
+
 
 
 
@@ -21,6 +24,8 @@ import EmployeeMultiStepRegistrationForm from './EmployeeMultiStepRegistrationFo
 
 
 export default function LandingRightPane({userTypes}) {
+ const [currUser, setCurrUser] = useState(null)
+
   return (
      <div className="w-1/2 bg-[#FDF6EE] p-10 flex flex-col justify-center">
           <h2 className="text-2xl font-semibold mb-2 text-gray-800">
@@ -38,7 +43,7 @@ export default function LandingRightPane({userTypes}) {
                 <button
                   key={user.title}
                   className="w-full text-left flex items-center gap-3 border border-gray-200 rounded-xl p-4 hover:bg-gray-100 transition"
-                  
+                  onClick={()=>setCurrUser(user.title)}
                 >
                   <span className="text-3xl">{user.icon}</span>
                   <div>
@@ -50,7 +55,13 @@ export default function LandingRightPane({userTypes}) {
            ))}
 
         <DialogContent className="sm:max-w-[425px]">
-          <EmployeeMultiStepRegistrationForm />
+          {/* {currUser === "Job Seeker" ? <EmployeeMultiStepRegistrationForm />:
+          currUser === "Employer" ? <EmployerMultiStepRegistrationForm /> : null} */}
+
+            {currUser === "Job Seeker" && <EmployeeMultiStepRegistrationForm />}
+           {currUser === "Employer" && <EmployerMultiStepRegistrationForm />}
+           {currUser === "Admin" && <AdminMultiStepRegistrationForm />}
+
         </DialogContent>
       </form>
     </Dialog>
